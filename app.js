@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -5,9 +7,10 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var usersRouter = require('./routes/animal');
 
 var app = express();
+const port = process.env.PORT || 4000;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -36,6 +39,25 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
+});
+
+app.listen(port, (error) => {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log(`Server listening on port ${port}`);
+  }
+});
+
+const db = require('./db');
+
+// Test database connection
+db.query('SELECT 1', (err) => {
+  if (err) {
+    console.error('Database connection failed:', err.message);
+  } else {
+    console.log('Database connected successfully!');
+  }
 });
 
 module.exports = app;
