@@ -9,8 +9,7 @@ const createCategoryQuery = (CategoryData) => {
 
 // Get all Categories
 const getAllCategoriesQuery = () => {
-  return 'test'
-  // return db.query("SELECT * FROM category");
+  return db.query("SELECT * FROM category");
 };
 
 // Get one Category by ID
