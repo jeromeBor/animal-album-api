@@ -7,7 +7,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
-var categoryRouter = require('./routes/category');
+var categoryRouter = require('./routes/categories');
 
 var app = express();
 const port = process.env.PORT || 4000;

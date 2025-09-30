@@ -13,24 +13,24 @@ const getAllCategoriesQuery = () => {
 };
 
 // Get one Category by ID
-const getCategoryByIdQuery = (id) => {
+const getOneCategoryQuery = (id) => {
   return db.query("SELECT * FROM category WHERE id = ?", [id]);
 };
 
 // // Update an Category by ID
-// const updateCategoryById = (id, CategoryData) => {
+// const updateCategory = (id, CategoryData) => {
 //   return db.query("UPDATE category SET ? WHERE id = ?", [CategoryData, id]);
 // };
 
 // Delete an Category by ID
-const deleteCategoryByIdQuery = (id) => {
+const deleteCategoryQuery = (id) => {
   return db.query("DELETE FROM category WHERE id = ?", [id]);
 };
 
 module.exports = {
   createCategoryQuery,
   getAllCategoriesQuery,
-  getCategoryByIdQuery,
-//   updateCategoryById,
-  deleteCategoryByIdQuery,
+  getOneCategoryQuery,
+//   updateCategory,
+  deleteCategoryQuery,
 };
