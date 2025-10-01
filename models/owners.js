@@ -4,7 +4,7 @@ const db = connection.promise();
 
 // Create a new Owner
 const createOwnerQuery = (ownerData) => {
-  return db.query("INSERT INTO owner SET ?", [OwnerData]);
+  return db.query("INSERT INTO owner SET ?", [ownerData]);
 };
 
 // Get all Owners
@@ -13,7 +13,8 @@ const getAllOwnersQuery = () => {
 };
 
 // Get one Owner by ID
-const getOwnerQuery = (id) => {
+const getOneOwnerQuery = (id) => {
+  console.log('getOneOwnerQuery', id)
   return db.query("SELECT * FROM owner WHERE id = ?", [id]);
 };
 
@@ -30,7 +31,7 @@ const deleteOwnerQuery = (id) => {
 module.exports = {
   createOwnerQuery,
   getAllOwnersQuery,
-  getOwnerQuery,
+  getOneOwnerQuery,
   updateOwnerQuery,
   deleteOwnerQuery,
 };

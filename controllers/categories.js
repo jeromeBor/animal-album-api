@@ -14,7 +14,7 @@ const getAllCategoriesController = function(req, res, next) {
 };
 
 const getOneCategoryController = function(req, res, next) {
-    const { id } = req.params;
+  const { id } = req.params;
   categoryModels
     .getOneCategoryQuery(id)
     .then(([results]) => {
