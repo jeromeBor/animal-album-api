@@ -30,6 +30,6 @@ module.exports = {
   createCategoryQuery,
   getAllCategoriesQuery,
   getOneCategoryQuery,
-  //   updateCategory,
+  updateCategory,
   deleteCategoryQuery,
 }
