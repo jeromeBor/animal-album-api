@@ -7,9 +7,37 @@ const postCategoryValidationObject = {
 
 const getAllCategoriesController = async (req, res, next) => {
   try {
+    // create Joi schema for empty body and query params
+    const emptySchema = Joi.object({}).unknown(false)
+    const querySchema = Joi.object({
+      limit: Joi.number().integer().positive().default(10),
+      page: Joi.number().integer().min(1).default(1),
+    }).unknown(false)
+
+    const { error: bodyError } = emptySchema.validate(req.body)
+
+    if (bodyError) {
+      const error = new Error('Request body must be empty for GET requests')
+      error.statusCode = 400
+      error.validationDetails = bodyError.details
+      throw error
+    }
+
+    const { error: queryError, value: validatedQuery } = querySchema.validate(
+      req.query,
+    )
+
+    if (queryError) {
+      const error = new Error('Invalid query parameters')
+      error.statusCode = 400
+      error.validationDetails = paramsError.details
+      throw error
+    }
+
     const results = await categoryModels.getAllCategoriesQuery()
+
     if (!results || (Array.isArray(results) && results.length === 0)) {
-      const error = new Error('NOT_FOUND')
+      const error = new Error('Data not found')
       error.statusCode = 404
       throw error
     }
@@ -21,32 +49,37 @@ const getAllCategoriesController = async (req, res, next) => {
 
 const getOneCategoryController = async (req, res, next) => {
   try {
+    // Joi shema, validate req.params and req.body
     const paramsSchema = Joi.object({
       id: Joi.number().integer().positive().required(),
     }).required()
+    const bodySchema = Joi.object({}).unknown(false)
 
-    const emptySchema = Joi.object({}).unknown(false)
-
-    const { id } = req.params
-    let results = []
-
+    // Joi params validation
     const { error: paramsError, value: validatedParams } =
       paramsSchema.validate(req.params)
-    results = await categoryModels.getOneCategoryQuery(id)
     if (paramsError) {
-      // wip
+      const error = new Error('Invalid ID format or missing ID.')
+      error.statusCode = 400
+      error.validationDetails = paramsError.details
+      throw error
     }
 
-    const { error: bodyError, value: validatedBody } = paramsSchema.validate(
-      req.params,
-    )
-
+    // Joi body validaiton (must be empty)
+    const { error: bodyError } = bodySchema.validate(req.params)
     if (bodyError) {
-      // wip
+      const error = new Error('Request body must be empty for GET requests')
+      error.statusCode = 400
+      error.validationDetails = paramsError.details
+      throw error
     }
 
-    if (!results.length) {
-      const error = new Error('NOT_FOUND')
+    // Fetch the category
+    const { id } = validatedParams
+    let [results] = await categoryModels.getOneCategoryQuery(id)
+
+    if (!result || result.length === 0) {
+      const error = new Error(`Category with ID ${id} not found.`)
       error.statusCode = 404
       throw error
     }
