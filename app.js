@@ -10,7 +10,7 @@ var logger = require('morgan');
 
 var categoryRouter = require('./routes/categories');
 var ownerRouter = require('./routes/owners');
-const customErrorHandler = require('./middleware/errorHandler'); // Renommé pour éviter la confusion
+const customErrorHandler = require('./middleware/errorHandler');
 const db = require('./db');
 var app = express();
 const port = process.env.PORT || 5000;

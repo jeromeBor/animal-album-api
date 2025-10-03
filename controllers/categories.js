@@ -1,98 +1,139 @@
-const categoryModels = require('../models/categories');
-const Joi = require('joi');
+const categoryModels = require('../models/categories')
+const Joi = require('joi')
 
-// const postDrawingValidationObject = {
-//   title: Joi.string().max(255).required(),
-//   imageLink: Joi.string().max(255).allow(null, ''),
-//   postContent: Joi.string(),
-//   dateOfWrite: Joi.number().required(),
-//   tagsId: Joi.number().integer().required(),
-// };
+const postCategoryValidationObject = {
+  title: Joi.string().max(255).required(),
+}
 
 const getAllCategoriesController = async (req, res, next) => {
   try {
-    const results = await categoryModels.getAllCategoriesQuery();
+    const results = await categoryModels.getAllCategoriesQuery()
     if (!results || (Array.isArray(results) && results.length === 0)) {
-      const error = new Error('NOT_FOUND');
-      error.statusCode = 404;
-      throw error;
+      const error = new Error('NOT_FOUND')
+      error.statusCode = 404
+      throw error
     }
-    res.status(200).json(results);
+    res.status(200).json(results)
   } catch (error) {
-    next(error);
+    next(error)
   }
-};
+}
 
 const getOneCategoryController = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const [results] = await categoryModels.getOneCategoryQuery(id);
-    if (!results.length) {
-      const error = new Error('NOT_FOUND');
-      error.statusCode = 404;
-      throw error;
+    const paramsSchema = Joi.object({
+      id: Joi.number().integer().positive().required(),
+    }).required()
+
+    const emptySchema = Joi.object({}).unknown(false)
+
+    const { id } = req.params
+    let results = []
+
+    const { error: paramsError, value: validatedParams } =
+      paramsSchema.validate(req.params)
+    results = await categoryModels.getOneCategoryQuery(id)
+    if (paramsError) {
+      // wip
     }
-    res.status(200).json(results[0]);
+
+    const { error: bodyError, value: validatedBody } = paramsSchema.validate(
+      req.params,
+    )
+
+    if (bodyError) {
+      // wip
+    }
+
+    if (!results.length) {
+      const error = new Error('NOT_FOUND')
+      error.statusCode = 404
+      throw error
+    }
+
+    res.status(200).json(results[0])
   } catch (error) {
-    next(error);
+    next(error)
   }
-};
+}
 
 const updateOneCategoryController = async (req, res, next) => {
-  const { id } = req.params;
-  const dataToUpdate = req.body; // Les données envoyées par l'utilisateur
+  const { id } = req.params
+  const dataToUpdate = req.body // Les données brutes du corps
 
   try {
-    const [initialResults] = await categoryModels.getOneOwnerQuery(id);
-    console.log('initialResults', initialResults);
+    const { error: validationErrorJoi, value: validatedData } = Joi.object(
+      postCategoryValidationObject,
+    ).validate(dataToUpdate, { abortEarly: false, stripUnknown: true }) // Valider et nettoyer les données
+
+    if (validationErrorJoi) {
+      // Les données ne sont pas valides, créer une erreur 422
+      const validationError = new Error('Data validation failed')
+      validationError.statusCode = 422
+      validationError.validationDetails = validationErrorJoi.details
+      throw validationError
+    }
+
+    const [initialResults] = await categoryModels.getOneOwnerQuery(id)
+    // Vérification de l'existence avant la mise à jour
     if (!initialResults) {
-      // Création d'une erreur 404 si la ressource n'est pas trouvée
-      const error = new Error('NOT_FOUND');
-      error.statusCode = 404;
-      throw error;
+      const notFoundError = new Error(`Category with ID ${id} not found.`)
+      notFoundError.statusCode = 404
+      throw notFoundError
     }
 
     const updateResults = await categoryModels.updateCategoryQuery(
       id,
-      dataToUpdate,
-    );
+      validatedData,
+    )
 
     if (updateResults.affectedRows === 0) {
-      const error = new Error('NOT_FOUND');
-      error.statusCode = 404;
-      throw error;
+      // La mise à jour n'a pas pu être effectuée
+      const modificationError = new Error(
+        `Category with ID ${id} could not be modified.`,
+      )
+      modificationError.statusCode = 500 // Utiliser un nom de variable clair
+      throw modificationError
     }
 
-    res.status(200).json({ ...initialResults, ...dataToUpdate });
+    res.status(200).json({ ...initialResults, ...validatedData })
   } catch (error) {
-    console.error('Error during category update:', error);
-    next(error);
+    console.error('Error during category update:', error)
+    next(error)
   }
-};
+}
 
 const deleteOneCategoryController = async (req, res, next) => {
-  // 1. Récupération de l'ID de la catégorie à supprimer
-  const { id } = req.params;
-
   try {
-    const [results] = await categoryModels.deleteCategoryQuery(id);
+    const deleteBodySchema = Joi.object({}).unknown(false)
+    const { error: bodyError } = deleteBodySchema.validate(req.body)
+    const { id } = req.params
 
-    if (results.affectedRows === 0) {
-      const error = new Error(`Category with ID ${id} not found for deletion.`);
-      error.statusCode = 404;
-      throw error;
+    if (bodyError) {
+      const error = new Error('Request body must be empty for DELETE requests.')
+      error.statusCode = 400
+      error.validationDetails = bodyError.details
+      throw error
     }
 
-    res.status(204).end();
+    const [results] = await categoryModels.deleteCategoryQuery(id)
+
+    if (results.affectedRows === 0) {
+      const error = new Error(`Category with ID ${id} not found for deletion.`)
+      error.statusCode = 404
+      throw error
+    }
+
+    res.status(204).end()
   } catch (error) {
-    console.error('Error during category deletion:', error);
-    next(error);
+    console.error('Error during category deletion:', error)
+    next(error)
   }
-};
+}
 
 module.exports = {
   getAllCategoriesController,
   getOneCategoryController,
   updateOneCategoryController,
   deleteOneCategoryController,
-};
+}
