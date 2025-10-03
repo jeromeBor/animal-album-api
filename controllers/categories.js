@@ -5,6 +5,25 @@ const postCategoryValidationObject = {
   title: Joi.string().max(255).required(),
 }
 
+const createCategoryController = async (req, res, next) => {
+  try {
+    const { error: validationError, value: validatedData } = Joi.object(
+      postCategoryValidationObject,
+    ).validate(req.body, { abortEarly: false, stripUnknown: true }) // Valider et nettoyer les données
+
+    if (validationError) {
+      const error = new Error('Data validation failed')
+      error.statusCode = 422
+      error.validationDetails = validationError.details
+      throw error
+    }
+    const results = await categoryModels.createCategoryQuery(validatedData)
+    res.status(201).json({ id: results.insertId, ...validatedData })
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getAllCategoriesController = async (req, res, next) => {
   try {
     // create Joi schema for empty body and query params
@@ -15,7 +34,6 @@ const getAllCategoriesController = async (req, res, next) => {
     }).unknown(false)
 
     const { error: bodyError } = emptySchema.validate(req.body)
-
     if (bodyError) {
       const error = new Error('Request body must be empty for GET requests')
       error.statusCode = 400
@@ -30,11 +48,11 @@ const getAllCategoriesController = async (req, res, next) => {
     if (queryError) {
       const error = new Error('Invalid query parameters')
       error.statusCode = 400
-      error.validationDetails = paramsError.details
+      error.validationDetails = queryError.details
       throw error
     }
 
-    const results = await categoryModels.getAllCategoriesQuery()
+    const results = await categoryModels.getAllCategoriesQuery(validatedQuery)
 
     if (!results || (Array.isArray(results) && results.length === 0)) {
       const error = new Error('Data not found')
@@ -66,11 +84,11 @@ const getOneCategoryController = async (req, res, next) => {
     }
 
     // Joi body validaiton (must be empty)
-    const { error: bodyError } = bodySchema.validate(req.params)
+    const { error: bodyError } = bodySchema.validate(req.body)
     if (bodyError) {
       const error = new Error('Request body must be empty for GET requests')
       error.statusCode = 400
-      error.validationDetails = paramsError.details
+      error.validationDetails = bodyError.details
       throw error
     }
 
@@ -78,7 +96,7 @@ const getOneCategoryController = async (req, res, next) => {
     const { id } = validatedParams
     let [results] = await categoryModels.getOneCategoryQuery(id)
 
-    if (!result || result.length === 0) {
+    if (!results || results.length === 0) {
       const error = new Error(`Category with ID ${id} not found.`)
       error.statusCode = 404
       throw error
@@ -91,19 +109,18 @@ const getOneCategoryController = async (req, res, next) => {
 }
 
 const updateOneCategoryController = async (req, res, next) => {
-  const { id } = req.params
-  const dataToUpdate = req.body // Les données brutes du corps
-
   try {
-    const { error: validationErrorJoi, value: validatedData } = Joi.object(
-      postCategoryValidationObject,
-    ).validate(dataToUpdate, { abortEarly: false, stripUnknown: true }) // Valider et nettoyer les données
+    const { id } = req.params
 
-    if (validationErrorJoi) {
+    const { error: validationErrorBody, value: validatedData } = Joi.object(
+      postCategoryValidationObject,
+    ).validate(req.body, { abortEarly: false, stripUnknown: true }) // Valider et nettoyer les données
+
+    if (validationErrorBody) {
       // Les données ne sont pas valides, créer une erreur 422
       const validationError = new Error('Data validation failed')
       validationError.statusCode = 422
-      validationError.validationDetails = validationErrorJoi.details
+      validationError.validationDetails = validationErrorBody.details
       throw validationError
     }
 
@@ -121,7 +138,6 @@ const updateOneCategoryController = async (req, res, next) => {
     )
 
     if (updateResults.affectedRows === 0) {
-      // La mise à jour n'a pas pu être effectuée
       const modificationError = new Error(
         `Category with ID ${id} could not be modified.`,
       )
@@ -140,7 +156,6 @@ const deleteOneCategoryController = async (req, res, next) => {
   try {
     const deleteBodySchema = Joi.object({}).unknown(false)
     const { error: bodyError } = deleteBodySchema.validate(req.body)
-    const { id } = req.params
 
     if (bodyError) {
       const error = new Error('Request body must be empty for DELETE requests.')
@@ -149,6 +164,7 @@ const deleteOneCategoryController = async (req, res, next) => {
       throw error
     }
 
+    const { id } = req.params
     const [results] = await categoryModels.deleteCategoryQuery(id)
 
     if (results.affectedRows === 0) {
@@ -165,6 +181,7 @@ const deleteOneCategoryController = async (req, res, next) => {
 }
 
 module.exports = {
+  createCategoryController,
   getAllCategoriesController,
   getOneCategoryController,
   updateOneCategoryController,

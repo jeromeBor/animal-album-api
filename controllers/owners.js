@@ -26,7 +26,6 @@ const getOneOwnerController = async (req, res, next) => {
       console.log([results])
       return res.status(404).send(`Owner with ID ${id} not found`)
     }
-
     res.status(200).json(results)
   } catch (error) {
     next(error)

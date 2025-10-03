@@ -16,10 +16,10 @@ const getOneCategoryQuery = (id) => {
   return db.query('SELECT * FROM category WHERE id = ?', [id])
 }
 
-// // Update an Category by ID
-// const updateCategory = (id, CategoryData) => {
-//   return db.query("UPDATE category SET ? WHERE id = ?", [CategoryData, id]);
-// };
+// Update an Category by ID
+const updateCategory = (id, CategoryData) => {
+  return db.query('UPDATE category SET ? WHERE id = ?', [CategoryData, id])
+}
 
 // Delete an Category by ID
 const deleteCategoryQuery = (id) => {
