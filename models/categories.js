@@ -18,9 +18,7 @@ const getAllCategoriesQuery = (limit = 10, page = 1) => {
     LIMIT ? 
     OFFSET ?;
   `
-  const values = [limit, offset]
-
-  return db.query(sql, values)
+  return db.query(sql, [limit, offset])
 }
 
 // Get one Category by ID

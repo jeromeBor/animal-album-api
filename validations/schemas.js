@@ -23,7 +23,7 @@ const schemas = {
       .unknown(false)
       .min(1),
     updateBodySchema: Joi.object({
-      name: Joi.string().alphanum().max(30),
+      name: Joi.string().alphanum().max(30).optional(),
     })
       .min(1)
       .unknown(false),

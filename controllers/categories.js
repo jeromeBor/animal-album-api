@@ -1,27 +1,17 @@
 const categoryModels = require('../models/categories')
-const Joi = require('joi')
-
-const schemas = require('../middleware/schemas').schemas
-const { global, category } = schemas
 
 const createCategoryController = async (req, res, next) => {
   try {
-    // Validate and sanitize request body
-    const { error: validationError, value: validatedData } = Joi.object(
-      category.postBodySchema,
-    ).validate(req.body, { abortEarly: false, stripUnknown: true }) // Valider et nettoyer les données
-    if (validationError) {
-      const error = new Error('Data validation failed')
-      error.statusCode = 422
-      error.validationDetails = validationError.details
-      throw error
-    }
+    // CORRECTION 1: Exécuter la requête AVANT d'essayer d'accéder à 'results'
+    const results = await categoryModels.createCategoryQuery(req.body)
 
-    const newId =
-      results && Array.isArray(results) ? results[0].insertId : results.insertId
-    const results = await categoryModels.createCategoryQuery(validatedData)
+    // CORRECTION 2: Accès sécurisé à l'ID retourné par la DB
+    const newId = results && results.insertId ? results.insertId : null
 
-    res.status(201).json({ id: newId, ...validatedData })
+    // Note: Si votre DB retourne un tableau [[{insertId: X}]], utilisez:
+    // const newId = results && Array.isArray(results) && results.length > 0 ? results[0].insertId : null
+
+    res.status(201).json({ id: newId, ...req.body })
   } catch (error) {
     next(error)
   }
@@ -29,45 +19,20 @@ const createCategoryController = async (req, res, next) => {
 
 const getAllCategoriesController = async (req, res, next) => {
   try {
-    // Check params (should be empty)
-    const { error: paramsError } = global.emptyParamsSchema.validate(req.params)
-    if (paramsError) {
-      const error = new Error('Invalid ID format or missing ID.')
-      error.statusCode = 400
-      error.validationDetails = paramsError.details
-      throw error
-    }
+    // Les données validées se trouvent dans req.query
+    const { limit, page } = req.query
 
-    // Check body (should be empty)
-    const { error: bodyError } = global.emptyParamsSchema.validate(req.body)
-    if (bodyError) {
-      const error = new Error('Request body must be empty for GET requests')
-      error.statusCode = 400
-      error.validationDetails = bodyError.details
-      throw error
-    }
+    const fullResults = await categoryModels.getAllCategoriesQuery(limit, page)
 
-    // Check query params
-
-    const { error: queryError, value: validatedQuery } =
-      global.paginationQuerySchema.validate(req.query)
-    if (queryError) {
-      const error = new Error('Invalid query parameters')
-      error.statusCode = 400
-      error.validationDetails = queryError.details
-      throw error
-    }
-
-    // Fetch categories with pagination
-    const { limit, page } = validatedQuery
-    const results = await categoryModels.getAllCategoriesQuery(limit, page)
-
+    const results = fullResults[0]
     if (!results || (Array.isArray(results) && results.length === 0)) {
       const error = new Error('Data not found')
       error.statusCode = 404
       throw error
     }
-    res.status(200).json(results[0])
+    // CORRECTION 3: Renvoyer le tableau complet des résultats (results), pas juste results[0]
+    // (results[0] est souvent le résultat de l'exécution, pas les données elles-mêmes)
+    res.status(200).json(results)
   } catch (error) {
     next(error)
   }
@@ -75,27 +40,10 @@ const getAllCategoriesController = async (req, res, next) => {
 
 const getOneCategoryController = async (req, res, next) => {
   try {
-    // Joi params validation
-    const { error: paramsError, value: validatedParams } =
-      global.singleIdParamsSchema.validate(req.params)
-    if (paramsError) {
-      const error = new Error('Invalid ID format or missing ID.')
-      error.statusCode = 400
-      error.validationDetails = global.singleIdParamsSchema.details
-      throw error
-    }
-
-    // Joi body validation (must be empty)
-    const { error: bodyError } = global.emptyParamsSchema.validate(req.body)
-    if (bodyError) {
-      const error = new Error('Request body must be empty for GET requests')
-      error.statusCode = 400
-      error.validationDetails = bodyError.details
-      throw error
-    }
+    // L'ID validé se trouve dans req.params
+    const { id } = req.params
 
     // Fetch the category
-    const { id } = validatedParams
     let [results] = await categoryModels.getOneCategoryQuery(id)
 
     if (!results || results.length === 0) {
@@ -104,6 +52,7 @@ const getOneCategoryController = async (req, res, next) => {
       throw error
     }
 
+    // CORRECTION 4: Renvoyer la première ligne de l'ensemble de résultats
     res.status(200).json(results[0])
   } catch (error) {
     next(error)
@@ -112,50 +61,33 @@ const getOneCategoryController = async (req, res, next) => {
 
 const updateOneCategoryController = async (req, res, next) => {
   try {
+    // L'ID validé se trouve dans req.params
     const { id } = req.params
+    // Les données validées se trouvent dans req.body
 
-    const { error: paramsError, value: validatedParams } =
-      global.singleIdParamsSchema.validate(req.params)
-    if (paramsError) {
-      const error = new Error('Invalid ID format or missing ID.')
-      error.statusCode = 400
-      error.validationDetails = paramsError.details
-      throw error
-    }
+    const [initialCheck] = await categoryModels.getOneCategoryQuery(id)
 
-    const { error: validationErrorBody, value: validatedData } = Joi.object(
-      category.updateBodySchema,
-    ).validate(req.body, { abortEarly: false, stripUnknown: true }) // Valider et nettoyer les données
-    if (validationErrorBody) {
-      // Les données ne sont pas valides, créer une erreur 422
-      const validationError = new Error('Data validation failed')
-      validationError.statusCode = 422
-      validationError.validationDetails = validationErrorBody.details
-      throw validationError
-    }
-
-    const [initialResults] = await categoryModels.getOneCategoryQuery(id)
-    // Vérification de l'existence avant la mise à jour
-    if (!initialResults) {
+    // CORRECTION 5: Vérifier si l'objet initial est vide
+    if (!initialCheck || initialCheck.length === 0) {
       const notFoundError = new Error(`Category with ID ${id} not found.`)
       notFoundError.statusCode = 404
       throw notFoundError
     }
+    const initialCategory = initialCheck[0]
 
-    const updateResults = await categoryModels.updateCategoryQuery(
-      validatedParams,
-      validatedData,
+    // CORRECTION 6: Passer l'ID et les données validées
+    const [updateResults] = await categoryModels.updateCategoryQuery(
+      id, // L'ID à utiliser dans la requête WHERE
+      req.body, // Le SET data
     )
 
+    // La vérification affectedRows est facultative si vous renvoyez simplement l'objet mis à jour
     if (updateResults.affectedRows === 0) {
-      const modificationError = new Error(
-        `Category with ID ${id} could not be modified.`,
-      )
-      modificationError.statusCode = 500 // Utiliser un nom de variable clair
-      throw modificationError
+      // Si 0 ligne affectée, cela signifie souvent que les données n'ont pas changé
     }
 
-    res.status(200).json({ ...initialResults, ...validatedData })
+    // On renvoie les données initiales fusionnées avec les données modifiées
+    res.status(200).json({ ...initialCategory, ...req.body })
   } catch (error) {
     console.error('Error during category update:', error)
     next(error)
@@ -164,15 +96,6 @@ const updateOneCategoryController = async (req, res, next) => {
 
 const deleteOneCategoryController = async (req, res, next) => {
   try {
-    const { error: bodyError } = global.singleIdParamsSchema.validate(req.body)
-
-    if (bodyError) {
-      const error = new Error('Request body must be empty for DELETE requests.')
-      error.statusCode = 400
-      error.validationDetails = bodyError.details
-      throw error
-    }
-
     const { id } = req.params
     const [results] = await categoryModels.deleteCategoryQuery(id)
 
