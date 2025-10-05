@@ -30,7 +30,7 @@ const deleteOwnerQuery = (id) => {
 
 // ----- OWNER ANIMALS RELATIONSHIP QUERIES -----
 
-const getOwnerAnimalController = (id) => {
+const getOwnerAnimalQuery = (id) => {
   return db.query(
     `SELECT a.* FROM animal a 
     JOIN owner_animal oa ON a.id = oa.animal_id
@@ -39,7 +39,7 @@ const getOwnerAnimalController = (id) => {
   )
 }
 
-const getOwnerAnimalCategoriesController = (id) => {
+const getOwnerAnimalCategoriesQuery = (id) => {
   return db.query(
     `SELECT DISTINCT
       c.name AS category_name,
@@ -62,6 +62,6 @@ module.exports = {
   getOneOwnerQuery,
   updateOwnerQuery,
   deleteOwnerQuery,
-  getOwnerAnimalController,
-  getOwnerAnimalCategoriesController,
+  getOwnerAnimalQuery,
+  getOwnerAnimalCategoriesQuery,
 }
