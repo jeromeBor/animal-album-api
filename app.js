@@ -41,15 +41,15 @@ app.use(function (req, res, next) {
 
 // 4. Gestionnaire d'erreurs par défaut (à supprimer si votre customErrorHandler fait tout)
 // Si vous gardez ceci, il doit être le dernier.
-// app.use(function (err, req, res, next) {
-//   // set locals, only providing error in development
-//   res.locals.message = err.message;
-//   res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.use(function (err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message
+  res.locals.error = req.app.get('env') === 'development' ? err : {}
 
-//   // Rendu de la page d'erreur (souvent désactivé pour les API JSON)
-//   res.status(err.status || 500);
-//   res.render('error');
-// });
+  // Rendu de la page d'erreur (souvent désactivé pour les API JSON)
+  res.status(err.status || 500)
+  res.render('error')
+})
 
 app.listen(port, (error) => {
   if (error) {

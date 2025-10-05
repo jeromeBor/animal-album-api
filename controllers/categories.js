@@ -1,28 +1,14 @@
 const categoryModels = require('../models/categories')
 const Joi = require('joi')
 
-const postValidationObjectBody = {
-  name: Joi.string().alphanum().max(30).required(),
-}
-const paramsSchema = Joi.object({
-  id: Joi.number().integer().positive().required(),
-}).required()
-const emptyParamsSchema = Joi.object({}).unknown(false)
+const schemas = require('../middleware/schemas').schemas
+const { global, category } = schemas
 
 const createCategoryController = async (req, res, next) => {
   try {
-    // Check params (should not be empty)
-    const { error: paramsError } = paramsSchema.validate(req.params)
-    if (paramsError) {
-      const error = new Error('Invalid ID format or missing ID.')
-      error.statusCode = 400
-      error.validationDetails = paramsError.details
-      throw error
-    }
-
     // Validate and sanitize request body
     const { error: validationError, value: validatedData } = Joi.object(
-      postValidationObjectBody,
+      category.postBodySchema,
     ).validate(req.body, { abortEarly: false, stripUnknown: true }) // Valider et nettoyer les données
     if (validationError) {
       const error = new Error('Data validation failed')
@@ -31,8 +17,11 @@ const createCategoryController = async (req, res, next) => {
       throw error
     }
 
+    const newId =
+      results && Array.isArray(results) ? results[0].insertId : results.insertId
     const results = await categoryModels.createCategoryQuery(validatedData)
-    res.status(201).json({ id: results.insertId, ...validatedData })
+
+    res.status(201).json({ id: newId, ...validatedData })
   } catch (error) {
     next(error)
   }
@@ -41,7 +30,7 @@ const createCategoryController = async (req, res, next) => {
 const getAllCategoriesController = async (req, res, next) => {
   try {
     // Check params (should be empty)
-    const { error: paramsError } = emptyParamsSchema.validate(req.params)
+    const { error: paramsError } = global.emptyParamsSchema.validate(req.params)
     if (paramsError) {
       const error = new Error('Invalid ID format or missing ID.')
       error.statusCode = 400
@@ -50,7 +39,7 @@ const getAllCategoriesController = async (req, res, next) => {
     }
 
     // Check body (should be empty)
-    const { error: bodyError } = emptyParamsSchema.validate(req.body)
+    const { error: bodyError } = global.emptyParamsSchema.validate(req.body)
     if (bodyError) {
       const error = new Error('Request body must be empty for GET requests')
       error.statusCode = 400
@@ -59,13 +48,9 @@ const getAllCategoriesController = async (req, res, next) => {
     }
 
     // Check query params
-    const querySchema = Joi.object({
-      limit: Joi.number().integer().positive().default(10),
-      page: Joi.number().integer().min(1).default(1),
-    }).unknown(false)
-    const { error: queryError, value: validatedQuery } = querySchema.validate(
-      req.query,
-    )
+
+    const { error: queryError, value: validatedQuery } =
+      global.paginationQuerySchema.validate(req.query)
     if (queryError) {
       const error = new Error('Invalid query parameters')
       error.statusCode = 400
@@ -90,21 +75,18 @@ const getAllCategoriesController = async (req, res, next) => {
 
 const getOneCategoryController = async (req, res, next) => {
   try {
-    // Joi shema, validate req.params and req.body
-    const bodySchema = Joi.object({}).unknown(false)
-
     // Joi params validation
     const { error: paramsError, value: validatedParams } =
-      paramsSchema.validate(req.params)
+      global.singleIdParamsSchema.validate(req.params)
     if (paramsError) {
       const error = new Error('Invalid ID format or missing ID.')
       error.statusCode = 400
-      error.validationDetails = paramsError.details
+      error.validationDetails = global.singleIdParamsSchema.details
       throw error
     }
 
-    // Joi body validaiton (must be empty)
-    const { error: bodyError } = bodySchema.validate(req.body)
+    // Joi body validation (must be empty)
+    const { error: bodyError } = global.emptyParamsSchema.validate(req.body)
     if (bodyError) {
       const error = new Error('Request body must be empty for GET requests')
       error.statusCode = 400
@@ -133,7 +115,7 @@ const updateOneCategoryController = async (req, res, next) => {
     const { id } = req.params
 
     const { error: paramsError, value: validatedParams } =
-      paramsSchema.validate(req.params)
+      global.singleIdParamsSchema.validate(req.params)
     if (paramsError) {
       const error = new Error('Invalid ID format or missing ID.')
       error.statusCode = 400
@@ -142,7 +124,7 @@ const updateOneCategoryController = async (req, res, next) => {
     }
 
     const { error: validationErrorBody, value: validatedData } = Joi.object(
-      postValidationObjectBody,
+      category.updateBodySchema,
     ).validate(req.body, { abortEarly: false, stripUnknown: true }) // Valider et nettoyer les données
     if (validationErrorBody) {
       // Les données ne sont pas valides, créer une erreur 422
@@ -152,7 +134,7 @@ const updateOneCategoryController = async (req, res, next) => {
       throw validationError
     }
 
-    const [initialResults] = await categoryModels.getOneOwnerQuery(id)
+    const [initialResults] = await categoryModels.getOneCategoryQuery(id)
     // Vérification de l'existence avant la mise à jour
     if (!initialResults) {
       const notFoundError = new Error(`Category with ID ${id} not found.`)
@@ -182,8 +164,7 @@ const updateOneCategoryController = async (req, res, next) => {
 
 const deleteOneCategoryController = async (req, res, next) => {
   try {
-    const deleteBodySchema = Joi.object({}).unknown(false)
-    const { error: bodyError } = deleteBodySchema.validate(req.body)
+    const { error: bodyError } = global.singleIdParamsSchema.validate(req.body)
 
     if (bodyError) {
       const error = new Error('Request body must be empty for DELETE requests.')

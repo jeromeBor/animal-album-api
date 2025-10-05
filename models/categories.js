@@ -12,20 +12,14 @@ const getAllCategoriesQuery = (limit = 10, page = 1) => {
   // Calcul de l'OFFSET (nombre de lignes à sauter)
   const offset = (page - 1) * limit
 
-  // ⚠️ Syntaxe SQL Server pour la pagination : OFFSET/FETCH NEXT
   const sql = `
     SELECT * FROM category 
     ORDER BY id ASC  
     LIMIT ? 
     OFFSET ?;
   `
-
-  // Dans SQL Server, les placeholders sont souvent nommés (@offset, @limit)
-  // ou simplement des ? selon votre driver Node.js.
-  // La méthode db.query doit lier ces variables nommées ou utiliser des ?
   const values = [limit, offset]
-  console.log(sql, values)
-  // IMPORTANT: Si votre driver supporte les ? comme placeholders :
+
   return db.query(sql, values)
 }
 

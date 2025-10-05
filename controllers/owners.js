@@ -67,7 +67,7 @@ const getAllOwnersController = async (req, res, next) => {
 
 const getOneOwnerController = async (req, res, next) => {
   try {
-    // Joi shema, validate req.params and req.body
+    // Joi schema, validate req.params and req.body
     const paramsSchema = Joi.object({
       id: Joi.number().integer().positive().required(),
     }).required()
