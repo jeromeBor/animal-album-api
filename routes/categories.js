@@ -4,6 +4,12 @@ const { schemas } = require('../validations/schemas')
 const validate = require('../middleware/validation')
 const { global, category } = schemas
 
+router.use((req, res, next) => {
+  // Cela garantit que toutes les erreurs venant de ce routeur seront étiquetées 'owner'
+  req.resource = 'owner'
+  next()
+})
+
 const {
   createCategoryController,
   getAllCategoriesController,

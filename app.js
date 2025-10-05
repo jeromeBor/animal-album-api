@@ -10,7 +10,7 @@ var logger = require('morgan')
 
 var categoryRouter = require('./routes/categories')
 var ownerRouter = require('./routes/owners')
-const customErrorHandler = require('./middleware/errorHandler')
+const errorHandler = require('./middleware/errorHandler')
 const db = require('./db')
 var app = express()
 const port = process.env.PORT || 5000
@@ -29,27 +29,9 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use('/category', categoryRouter)
 app.use('/owner', ownerRouter)
 
-// 2. Gestionnaire 404 par défaut (catch 404)
-// Ce middleware s'exécute si aucune route ci-dessus n'a géré la requête.
-app.use(function (req, res, next) {
-  next(createError(404))
-})
+app.use(errorHandler)
 
-// 3. Intégration de votre gestionnaire d'erreurs personnalisé
-// Placez-le avant le gestionnaire d'erreurs par défaut (celui qui rend la vue 'error').
-// app.use(customErrorHandler);
-
-// 4. Gestionnaire d'erreurs par défaut (à supprimer si votre customErrorHandler fait tout)
-// Si vous gardez ceci, il doit être le dernier.
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message
-  res.locals.error = req.app.get('env') === 'development' ? err : {}
-
-  // Rendu de la page d'erreur (souvent désactivé pour les API JSON)
-  res.status(err.status || 500)
-  res.render('error')
-})
+// catch 404 and forward to error handler
 
 app.listen(port, (error) => {
   if (error) {

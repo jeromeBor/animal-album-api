@@ -1,12 +1,18 @@
-var express = require('express');
-var router = express.Router();
+var express = require('express')
+var router = express.Router()
+
+router.use((req, res, next) => {
+  // Labeled 'owner'
+  req.resource = 'owner'
+  next()
+})
 
 const {
   getAllOwnersController,
-  getOneOwnerController
+  getOneOwnerController,
 } = require('../controllers/owners')
 
-router.get('/', getAllOwnersController);
-router.get('/:id', getOneOwnerController);
+router.get('/', getAllOwnersController)
+router.get('/:id', getOneOwnerController)
 
-module.exports = router;
+module.exports = router
