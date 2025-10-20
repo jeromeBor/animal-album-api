@@ -1,5 +1,4 @@
 const ownerModels = require('../models/owners')
-const { get } = require('../routes/owners')
 
 const createOwnerController = async (req, res, next) => {
   try {
@@ -16,8 +15,9 @@ const createOwnerController = async (req, res, next) => {
 const getAllOwnersController = async (req, res, next) => {
   try {
     // create Joi schema for empty body and query params
+    const { limit, page } = req.query
 
-    const fullResults = await ownerModels.getAllOwnersQuery(req.body)
+    const fullResults = await ownerModels.getAllOwnersQuery(limit, page)
 
     const results = fullResults[0]
 
@@ -76,11 +76,15 @@ const getOwnerAnimalController = async (req, res, next) => {
     const { ownerId } = req.params
 
     let [results] = await ownerModels.getOwnerAnimalQuery(ownerId)
-    if (!results || results.length === 0) {
+
+    const [ownerCheck] = await ownerModels.getOneOwnerQuery(ownerId)
+    if (!ownerCheck || ownerCheck.length === 0) {
       const error = new Error(`Owner with ID ${ownerId} not found.`)
       error.statusCode = 404
       throw error
     }
+
+    res.status(200).json(results)
   } catch (error) {
     next(error)
   }
@@ -88,13 +92,31 @@ const getOwnerAnimalController = async (req, res, next) => {
 
 const getOwnerAnimalCategoriesController = async (req, res, next) => {
   try {
-    const { ownerId } = req.params
-    let [results] = await ownerModels.getOwnerAnimalCategoriesQuery(ownerId)
-    if (!results || results.length === 0) {
+    const { ownerId, animalId } = req.params
+
+    const [ownerCheck] = await ownerModels.getOneOwnerQuery(ownerId)
+    if (!ownerCheck || ownerCheck.length === 0) {
       const error = new Error(`Owner with ID ${ownerId} not found.`)
       error.statusCode = 404
       throw error
     }
+
+    let [results] = await ownerModels.getOwnerAnimalCategoriesQuery(ownerId)
+
+    const [relationCheck] = await ownerModels.checkOwnerAnimalRelationQuery(
+      ownerId,
+      animalId,
+    )
+    if (!relationCheck || relationCheck.length === 0) {
+      // L'animal n'existe pas ou n'appartient pas à ce propriétaire
+      const error = new Error(
+        `Animal with ID ${animalId} not found for owner ${ownerId}.`,
+      )
+      error.statusCode = 404
+      throw error
+    }
+
+    res.status(200).json(results)
   } catch (error) {
     next(error)
   }

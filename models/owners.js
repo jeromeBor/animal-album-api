@@ -37,20 +37,24 @@ const getOwnerAnimalQuery = (id) => {
   )
 }
 
-const getOwnerAnimalCategoriesQuery = (id) => {
+const checkOwnerAnimalRelationQuery = (ownerId, animalId) => {
   return db.query(
-    `SELECT DISTINCT
-      c.name AS category_name,
-      c.id AS category_id
-    FROM
-      owner_animal oa
-    JOIN
-      animal a ON oa.animal_id = a.id
-    JOIN
-      category c ON a.category_id = c.id
-    WHERE
-      oa.owner_id = ?`,
-    [id],
+    `SELECT * FROM owner_animal 
+     WHERE owner_id = ? AND animal_id = ?
+     LIMIT 1`,
+    [ownerId, animalId],
+  )
+}
+
+const getOwnerAnimalCategoriesQuery = (ownerId, animalId) => {
+  // Cette requête doit s'assurer que l'ownerId ET l'animalId sont liés
+  return db.query(
+    `SELECT c.* FROM category c
+     JOIN animal_category ac ON c.id = ac.category_id
+     JOIN animal a ON ac.animal_id = a.id
+     JOIN owner_animal oa ON a.id = oa.animal_id
+     WHERE oa.owner_id = ? AND oa.animal_id = ?`,
+    [ownerId, animalId],
   )
 }
 
@@ -58,6 +62,7 @@ module.exports = {
   createOwnerQuery,
   getAllOwnersQuery,
   getOneOwnerQuery,
+  checkOwnerAnimalRelationQuery,
   updateOwnerQuery,
   deleteOwnerQuery,
   getOwnerAnimalQuery,

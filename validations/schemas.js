@@ -3,7 +3,7 @@ const Joi = require('joi')
 const schemas = {
   global: {
     // Pour les requêtes sans paramètres ni corps
-    emptyParamsSchema: Joi.object({}).unknown(false),
+    emptySchema: Joi.object({}).unknown(false),
     // Pour valider l'ID dans les paramètres de route (:id)
     singleIdParamsSchema: Joi.object({
       id: Joi.number().integer().positive().required(),

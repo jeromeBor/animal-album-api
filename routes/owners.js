@@ -23,32 +23,32 @@ const {
 router.post(
   '/',
   validate(global.emptyParamsSchema, 'params'),
-  validate(owner.postBodySchema, 'body'),
+  validate(owner.emptySchema, 'body'),
   createOwnerController,
 )
 router.get(
   '/',
-  validate(owner.ownerIdParamsSchema, 'params'),
-  validate(global.emptyParamsSchema, 'body'),
+  validate(global.emptySchema, 'params'),
+  validate(global.emptySchema, 'body'),
   validate(global.paginationQuerySchema, 'query'),
   getAllOwnersController,
 )
 router.get(
-  '/:id',
+  '/:ownerId',
   validate(owner.ownerIdParamsSchema, 'params'),
-  validate(global.emptyParamsSchema, 'body'),
+  validate(global.emptySchema, 'body'),
   getOneOwnerController,
 )
 router.get(
   '/:ownerId/animals',
-  validate(owner.singleOwnerIdParamsSchema, 'params'),
-  validate(global.emptyParamsSchema, 'body'),
+  validate(owner.ownerIdParamsSchema, 'params'),
+  validate(global.emptySchema, 'body'),
   getOwnerAnimalController,
 )
 router.get(
   '/:ownerId/animals/:animalId/categories',
   validate(owner.ownerAnimalParamsSchema, 'params'),
-  validate(global.emptyParamsSchema, 'body'),
+  validate(global.emptySchema, 'body'),
   getOwnerAnimalCategoriesController,
 )
 router.put(
@@ -60,7 +60,7 @@ router.put(
 router.delete(
   '/:id',
   validate(owner.ownerIdParamsSchema, 'params'),
-  validate(global.emptyParamsSchema, 'body'),
+  validate(global.emptySchema, 'body'),
   deleteOneOwnerController,
 )
 

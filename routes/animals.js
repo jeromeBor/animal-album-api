@@ -6,7 +6,7 @@ const { global, category } = schemas
 
 router.use((req, res, next) => {
   // Cela garantit que toutes les erreurs venant de ce routeur seront étiquetées 'owner'
-  req.resource = 'category'
+  req.resource = 'owner'
   next()
 })
 
