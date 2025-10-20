@@ -26,8 +26,9 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
 // 1. Routes de l'application
-app.use('/category', categoryRouter)
-app.use('/owner', ownerRouter)
+app.use('/categories', categoryRouter)
+app.use('/owners', ownerRouter)
+app.use('/animals', ownerRouter)
 
 app.use(errorHandler)
 

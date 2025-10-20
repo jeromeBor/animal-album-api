@@ -14,8 +14,9 @@ const {
   createOwnerController,
   getAllOwnersController,
   getOneOwnerController,
-  getOwnerAnimalController,
-  getOwnerAnimalCategoriesController,
+  getAnimalsCategoriesByOwnerController,
+  getOneAnimalByOwnerController,
+  getAnimalCategoriesByOwnerController,
   updateOneOwnerController,
   deleteOneOwnerController,
 } = require('../controllers/owners')
@@ -43,13 +44,19 @@ router.get(
   '/:ownerId/animals',
   validate(owner.ownerIdParamsSchema, 'params'),
   validate(global.emptySchema, 'body'),
-  getOwnerAnimalController,
+  getAnimalsCategoriesByOwnerController,
+)
+router.get(
+  '/:ownerId/animals/:animalId',
+  validate(owner.ownerIdParamsSchema, 'params'),
+  validate(global.emptySchema, 'body'),
+  getOneAnimalByOwnerController,
 )
 router.get(
   '/:ownerId/animals/:animalId/categories',
   validate(owner.ownerAnimalParamsSchema, 'params'),
   validate(global.emptySchema, 'body'),
-  getOwnerAnimalCategoriesController,
+  getAnimalCategoriesByOwnerController,
 )
 router.put(
   '/:id',

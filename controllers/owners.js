@@ -71,7 +71,7 @@ const updateOneOwnerController = async (req, res, next) => {
   }
 }
 
-const getOwnerAnimalController = async (req, res, next) => {
+const getAnimalsCategoriesByOwnerController = async (req, res, next) => {
   try {
     const { ownerId } = req.params
 
@@ -90,7 +90,33 @@ const getOwnerAnimalController = async (req, res, next) => {
   }
 }
 
-const getOwnerAnimalCategoriesController = async (req, res, next) => {
+const getOneAnimalByOwnerController = async (req, res, next) => {
+  try {
+    const { ownerId, animalId } = req.params
+
+    const [ownerCheck] = await ownerModels.getOneOwnerQuery(ownerId)
+    if (!ownerCheck || ownerCheck.length === 0) {
+      const error = new Error(`Owner with ID ${ownerId} not found.`)
+      error.statusCode = 404
+      throw error
+    }
+
+    let [results] = await ownerModels.getOwnerAnimalQuery(ownerId)
+
+    if (!results || results.length === 0) {
+      const error = new Error(
+        `Animal with ID ${animalId} not found for owner ${ownerId}.`,
+      )
+      error.statusCode = 404
+      throw error
+    }
+    res.status(200).json(results[0])
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getAnimalCategoriesByOwnerController = async (req, res, next) => {
   try {
     const { ownerId, animalId } = req.params
 
@@ -146,8 +172,9 @@ module.exports = {
   createOwnerController,
   getAllOwnersController,
   getOneOwnerController,
-  getOwnerAnimalController,
-  getOwnerAnimalCategoriesController,
+  getOneAnimalByOwnerController,
+  getAnimalsCategoriesByOwnerController,
+  getAnimalCategoriesByOwnerController,
   updateOneOwnerController,
   deleteOneOwnerController,
 }
