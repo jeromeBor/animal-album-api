@@ -28,7 +28,25 @@ const schemas = {
       .min(1)
       .unknown(false),
   },
-  owner: {},
+  owner: {
+    ownerIdParamsSchema: Joi.object({
+      ownerId: Joi.number().integer().positive().required(),
+    }),
+    ownerAnimalParamsSchema: Joi.object({
+      ownerId: Joi.number().integer().positive().required(),
+      animalId: Joi.number().integer().positive().required(),
+    }),
+    postBodySchema: Joi.object({
+      name: Joi.string().alphanum().max(30).required(),
+      image: Joi.string().uri().max(255).optional(),
+      birthdate: Joi.date().less('now').required(),
+    }),
+    updateBodySchema: Joi.object({
+      name: Joi.string().alphanum().max(30).optional(),
+      image: Joi.string().uri().max(255).optional(),
+      birthdate: Joi.date().less('now').optional(),
+    }),
+  },
   animals: {},
 }
 

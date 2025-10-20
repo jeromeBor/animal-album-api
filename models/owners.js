@@ -1,8 +1,6 @@
 const connection = require('../db')
 const db = connection.promise()
 
-// ------- OWNER QUERIES -------
-
 // Create a new Owner
 const createOwnerQuery = (ownerData) => {
   return db.query('INSERT INTO owner SET ?', [ownerData])

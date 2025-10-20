@@ -1,7 +1,7 @@
 var express = require('express')
 var router = express.Router()
-const { schemas } = require('../validations/schemas')
 const validate = require('../middleware/validation')
+const { schemas } = require('../validations/schemas')
 const { global, category } = schemas
 
 router.use((req, res, next) => {
