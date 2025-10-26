@@ -36,7 +36,7 @@ const getAnimalOwnerQuery = (id) => {
 }
 
 // Update an Animal by ID
-const updateAnimal = (id, AnimalData) => {
+const updateAnimalQuery = (id, AnimalData) => {
   return db.query('UPDATE animal SET ? WHERE id = ?', [AnimalData, id])
 }
 
@@ -50,6 +50,6 @@ module.exports = {
   getAllAnimalsQuery,
   getOneAnimalQuery,
   getAnimalOwnerQuery,
-  updateAnimal,
+  updateAnimalQuery,
   deleteAnimalQuery,
 }

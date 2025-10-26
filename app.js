@@ -10,6 +10,7 @@ var logger = require('morgan')
 
 var categoryRouter = require('./routes/categories')
 var ownerRouter = require('./routes/owners')
+var animalRouter = require('./routes/animals')
 const errorHandler = require('./middleware/errorHandler')
 const db = require('./db')
 var app = express()
@@ -28,7 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 // 1. Routes de l'application
 app.use('/categories', categoryRouter)
 app.use('/owners', ownerRouter)
-app.use('/animals', ownerRouter)
+app.use('/animals', animalRouter)
 
 app.use(errorHandler)
 

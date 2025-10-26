@@ -2,7 +2,7 @@ const ownerModels = require('../models/owners')
 
 const createOwnerController = async (req, res, next) => {
   try {
-    const results = await ownerModels.createOwnerQuery(req.body)
+    const [results] = await ownerModels.createOwnerQuery(req.body)
 
     const newId = results && results.insertId ? results.insertId : null
 
@@ -62,9 +62,9 @@ const updateOneOwnerController = async (req, res, next) => {
     }
     const initialOwner = initialCheck[0]
 
-    const updateResults = await ownerModels.updateOwnerQuery(ownerId, req.body)
+    await ownerModels.updateOwnerQuery(ownerId, req.body)
 
-    res.status(200).json({ ...initialOwner, ...updateResults })
+    res.status(200).json({ ...initialOwner, ...req.body })
   } catch (error) {
     console.error('Error during owner update:', error)
     next(error)

@@ -28,6 +28,30 @@ const schemas = {
       .min(1)
       .unknown(false),
   },
+
+  animal: {
+    postBodySchema: Joi.object({
+      name: Joi.string().alphanum().max(30).required(),
+      birthdate: Joi.date().less('now').required(),
+      image: Joi.string().uri().max(255).optional(),
+      description: Joi.string().max(500).required(),
+      category_id: Joi.number().integer().positive().required(),
+      owner_id: Joi.number().integer().positive().required(),
+    })
+      .unknown(false)
+      .min(1),
+    updateBodySchema: Joi.object({
+      name: Joi.string().alphanum().max(30).optional(),
+      birthdate: Joi.date().less('now').optional(),
+      image: Joi.string().uri().max(255).optional(),
+      description: Joi.string().max(500).optional(),
+      category_id: Joi.number().integer().positive().optional(),
+      owner_id: Joi.number().integer().positive().optional(),
+    })
+      .min(1)
+      .unknown(false),
+  },
+
   owner: {
     ownerIdParamsSchema: Joi.object({
       ownerId: Joi.number().integer().positive().required(),
@@ -47,7 +71,6 @@ const schemas = {
       birthdate: Joi.date().less('now').optional(),
     }),
   },
-  animals: {},
 }
 
 module.exports = {

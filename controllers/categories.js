@@ -2,7 +2,7 @@ const categoryModels = require('../models/categories')
 
 const createCategoryController = async (req, res, next) => {
   try {
-    const results = await categoryModels.createCategoryQuery(req.body)
+    const [results] = await categoryModels.createCategoryQuery(req.body)
 
     const newId = results && results.insertId ? results.insertId : null
 
@@ -62,10 +62,10 @@ const updateOneCategoryController = async (req, res, next) => {
     }
     const initialCategory = initialCheck[0]
 
-    const updateResults = await categoryModels.updateCategoryQuery(id, req.body)
+    await categoryModels.updateCategoryQuery(id, req.body)
 
     // On renvoie les données initiales fusionnées avec les données modifiées
-    res.status(200).json({ ...initialCategory, ...updateResults })
+    res.status(200).json({ ...initialCategory, ...req.body })
   } catch (error) {
     console.error('Error during category update:', error)
     next(error)

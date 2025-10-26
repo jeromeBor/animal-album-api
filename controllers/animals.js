@@ -2,8 +2,7 @@ const animalModels = require('../models/animals')
 
 const createAnimalController = async (req, res, next) => {
   try {
-    const results = await animalModels.createAnimalQuery(req.body)
-
+    const [results] = await animalModels.createAnimalQuery(req.body)
     const newId = results && results.insertId ? results.insertId : null
 
     res.status(201).json({ id: newId, ...req.body })
@@ -12,7 +11,7 @@ const createAnimalController = async (req, res, next) => {
   }
 }
 
-const getAllAnimalesController = async (req, res, next) => {
+const getAllAnimalsController = async (req, res, next) => {
   try {
     const { limit, page } = req.query
 
@@ -80,10 +79,10 @@ const updateOneAnimalController = async (req, res, next) => {
     }
     const initialAnimal = initialCheck[0]
 
-    const updateResults = await animalModels.updateAnimalQuery(id, req.body)
+    await animalModels.updateAnimalQuery(id, req.body)
 
     // On renvoie les données initiales fusionnées avec les données modifiées
-    res.status(200).json({ ...initialAnimal, ...updateResults })
+    res.status(200).json({ ...initialAnimal, ...req.body })
   } catch (error) {
     console.error('Error during animal update:', error)
     next(error)
@@ -110,7 +109,7 @@ const deleteOneAnimalController = async (req, res, next) => {
 
 module.exports = {
   createAnimalController,
-  getAllAnimalesController,
+  getAllAnimalsController,
   getOneAnimalController,
   getAnimalOwnerController,
   updateOneAnimalController,
