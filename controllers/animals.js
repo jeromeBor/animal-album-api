@@ -15,7 +15,7 @@ const getAllAnimalsController = async (req, res, next) => {
   try {
     const { limit, page } = req.query
 
-    const fullResults = await animalModels.getAllAnimalesQuery(limit, page)
+    const fullResults = await animalModels.getAllAnimalsQuery(limit, page)
 
     const results = fullResults[0]
 
