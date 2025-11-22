@@ -29,11 +29,14 @@ app.use(express.static(path.join(__dirname, 'public')))
 // CORS middleware - allow requests from the frontend (localhost:3000)
 app.use((req, res, next) => {
   // adjust the origin as needed or use '*' to allow any origin
-  res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || 'http://localhost:3000')
+  res.header(
+    'Access-Control-Allow-Origin',
+    process.env.CORS_ORIGIN || 'http://localhost:3000',
+  )
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
   res.header(
     'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization',
   )
   // intercept OPTIONS method
   if (req.method === 'OPTIONS') {

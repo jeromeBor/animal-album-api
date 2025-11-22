@@ -1,7 +1,13 @@
 const animalModels = require('../models/animals')
+const multer = require('../middleware/multer')
 
 const createAnimalController = async (req, res, next) => {
   try {
+    const imagePath = req.file ? req.file.path : null
+
+    if (imagePath) {
+      req.body.image_url = imagePath
+    }
     const [results] = await animalModels.createAnimalQuery(req.body)
     const newId = results && results.insertId ? results.insertId : null
 
@@ -103,6 +109,28 @@ const deleteOneAnimalController = async (req, res, next) => {
     res.status(204).end()
   } catch (error) {
     console.error('Error during animal deletion:', error)
+    next(error)
+  }
+}
+
+const uploadAnimalImageController = async (req, res, next) => {
+  try {
+    multer.upload(req, res, (err) => {
+      if (err instanceof multer.multer.MulterError) {
+        console.error(err)
+        res.status(500).json(err)
+      } else if (err) {
+        console.error(err)
+        res.status(500).json(err)
+      } else {
+        const { id } = req.params
+        const { path } = req.file
+        createAnimalController.updateOneDrawingQuery(id, { imageLink: path })
+        console.log(path)
+        res.status(200).send(req.file)
+      }
+    })
+  } catch (error) {
     next(error)
   }
 }

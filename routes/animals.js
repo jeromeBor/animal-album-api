@@ -3,7 +3,7 @@ var router = express.Router()
 const validate = require('../middleware/validation')
 const { schemas } = require('../validations/schemas')
 const { global, animal } = schemas
-
+const { imageUpload } = require('./uploadMiddleware.js')
 router.use((req, res, next) => {
   // Cela garantit que toutes les erreurs venant de ce routeur seront étiquetées 'owner'
   req.resource = 'animal'
@@ -22,6 +22,7 @@ router.post(
   '/',
   validate(global.emptySchema, 'params'),
   validate(animal.postBodySchema, 'body'),
+  imageUpload,
   createAnimalController,
 )
 router.get(
